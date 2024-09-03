@@ -8,16 +8,17 @@ using UnityEngine.UI;
 
 public class ChoiceController : MonoBehaviourPunCallbacks
 {
+    #region 필드
     public Button openButton;
     public Button secretButton;
     public Button cancelButton;
+
     InGameManager im;
-    PunTurnManager turnManager;
+    #endregion
     // Start is called before the first frame update
     void Start()
     {
         im = InGameManager.instance;
-        turnManager = im.GetComponent<PunTurnManager>();
     }
 
     // Update is called once per frame
@@ -39,22 +40,18 @@ public class ChoiceController : MonoBehaviourPunCallbacks
         photonView.RPC("SpawnFieldOpenCard", RpcTarget.Others, yourPrefabName, yourSpawnPosition, yourFieldParentName, yourFieldCardname);
         photonView.RPC("RemoveHandCard", RpcTarget.Others, yourHandParentName);
 
+        int playerNumber = PhotonNetwork.LocalPlayer.ActorNumber;
+        if (playerNumber == im.playerList[0])
+            im.playerAHand.RemoveAt(im.clickedMyCardIdx);
+        else if (playerNumber == im.playerList[1])
+            im.playerBHand.RemoveAt(im.clickedMyCardIdx);
+
         gameObject.SetActive(false);
     }
     public void OnClickSecret()
     {
-        string hexColor = "#616161";
-
-        // Color 변수 생성
-        Color newColor;
         Transform childCard = im.myHandCardList.transform.GetChild(im.clickedMyCardIdx);
-
-        // Hex 코드를 Color로 변환
-        if (ColorUtility.TryParseHtmlString(hexColor, out newColor))
-        {
-            // 버튼의 색상 변경
-            childCard.GetComponent<Image>().color = newColor;
-        }
+        childCard.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.SecretColor);
 
         childCard.SetParent(im.myFieldCardList.transform);
 
@@ -65,6 +62,12 @@ public class ChoiceController : MonoBehaviourPunCallbacks
 
         photonView.RPC("SpawnFieldSecretCard", RpcTarget.Others, yourPrefabName, yourSpawnPosition, yourFieldParentName, im.clickedMyCardNumber);
         photonView.RPC("RemoveHandCard", RpcTarget.Others, yourHandParentName);
+
+        int playerNumber = PhotonNetwork.LocalPlayer.ActorNumber;
+        if (playerNumber == im.playerList[0])
+            im.playerAHand.RemoveAt(im.clickedMyCardIdx);
+        else if (playerNumber == im.playerList[1])
+            im.playerBHand.RemoveAt(im.clickedMyCardIdx);
 
         gameObject.SetActive(false);
     }
@@ -81,7 +84,7 @@ public class ChoiceController : MonoBehaviourPunCallbacks
         go.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = cardNumber;
         go.transform.GetChild(0).gameObject.SetActive(false);
         Transform parent = GameObject.Find(parentName).transform;
-        go.transform.SetParent(parent, false); // false로 설정하여 위치와 회전을 보존
+        go.transform.SetParent(parent, false); 
     }
     // 상대방에게 오픈필드카드 생성을 알림
     [PunRPC]
@@ -90,7 +93,7 @@ public class ChoiceController : MonoBehaviourPunCallbacks
         GameObject go = PhotonNetwork.Instantiate(prefabName, position, Quaternion.identity);
         go.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = cardNumber;
         Transform parent = GameObject.Find(parentName).transform;
-        go.transform.SetParent(parent, false); // false로 설정하여 위치와 회전을 보존
+        go.transform.SetParent(parent, false); 
     }
     // 상대방에게 핸드카드 제거를 알림
     [PunRPC]

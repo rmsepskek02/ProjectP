@@ -8,6 +8,7 @@ using UnityEngine.UI;
 
 public class LobbyManager : MonoBehaviourPunCallbacks
 {
+    #region 필드
     public TextMeshProUGUI width;
     public TextMeshProUGUI height;
     public TMP_InputField roomNameInputField;
@@ -15,14 +16,12 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public Transform roomListContent;
     public GameObject roomItemFactory;
 
-    private Dictionary<string, RoomInfo> roomCache = new Dictionary<string, RoomInfo>();
-    private string roomNameText;
-    private string roomPasswordText;
-
+    Dictionary<string, RoomInfo> roomCache = new Dictionary<string, RoomInfo>();
+    string roomNameText;
+    string roomPasswordText;
+    #endregion
     void Start()
     {
-        // 로비에 입장
-        //PhotonNetwork.JoinLobby();
         OnConnectedToMaster();
     }
 
@@ -56,13 +55,11 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public override void OnCreatedRoom()
     {
         base.OnCreatedRoom();
-        Debug.Log("방이 생성되었습니다.");
     }
 
     public override void OnCreateRoomFailed(short returnCode, string message)
     {
         base.OnCreateRoomFailed(returnCode, message);
-        Debug.Log("방 생성 실패: " + returnCode + "/" + message);
     }
 
     public void JoinRoom(string roomName, string password)
@@ -73,14 +70,12 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom()
     {
         base.OnJoinedRoom();
-        Debug.Log("방에 참가했습니다.");
         PhotonNetwork.LoadLevel("GameScene");
     }
 
     public override void OnJoinRoomFailed(short returnCode, string message)
     {
         base.OnJoinRoomFailed(returnCode, message);
-        Debug.Log("방 참가 실패: " + returnCode + ", " + message);
     }
 
     public override void OnRoomListUpdate(List<RoomInfo> roomList)
@@ -97,13 +92,9 @@ public class LobbyManager : MonoBehaviourPunCallbacks
         foreach (RoomInfo room in roomList)
         {
             if (room.RemovedFromList)
-            {
                 roomCache.Remove(room.Name);
-            }
             else
-            {
                 roomCache[room.Name] = room;
-            }
         }
     }
 
@@ -131,7 +122,6 @@ public class LobbyManager : MonoBehaviourPunCallbacks
     }
     public override void OnConnectedToMaster()
     {
-        Debug.Log("서버에 연결되었습니다.");
         // 서버에 연결된 후 로비로 진입할 수 있습니다.
         PhotonNetwork.JoinLobby();
     }

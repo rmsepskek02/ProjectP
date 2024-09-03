@@ -7,11 +7,13 @@ using UnityEngine.UI;
 
 public class DeckController : MonoBehaviourPunCallbacks
 {
+    #region 필드
     public GameObject myCardItem;
+    public bool enableDraw = true;
+
     InGameManager im;
     PunTurnManager turnManager;
-
-    public bool enableDraw = true;
+    #endregion
     void Start()
     {
         im = InGameManager.instance;
@@ -35,17 +37,17 @@ public class DeckController : MonoBehaviourPunCallbacks
     public void DrawCard(string cardNumber)
     {
         if (cardNumber == "") return;
+
+        string yourPrefabName = "Prefabs/Card/YourCard";
+        Vector3 yourSpawnPosition = im.yourHandCardList.transform.position;
+        string yourParentName = im.yourHandCardList.name;
+
         // 마스터 턴
         if (turnManager.Turn % 2 == 1)
         {
             // 마스터 클릭
             if (PhotonNetwork.LocalPlayer.ActorNumber == im.playerList[0])
             {
-                string yourPrefabName = "Prefabs/Card/YourCard";
-                Vector3 yourSpawnPosition = im.yourHandCardList.transform.position;
-                string yourParentName = im.yourHandCardList.name;
-
-                // 마스터 카드 추가
                 GameObject go = Instantiate(myCardItem, im.myHandCardList.transform);
                 go.GetComponentInChildren<TextMeshProUGUI>().text = cardNumber;
 
@@ -65,11 +67,6 @@ public class DeckController : MonoBehaviourPunCallbacks
                 return;
             else if (PhotonNetwork.LocalPlayer.ActorNumber == im.playerList[1])
             {
-                string yourPrefabName = "Prefabs/Card/YourCard";
-                Vector3 yourSpawnPosition = im.yourHandCardList.transform.position;
-                string yourParentName = im.yourHandCardList.name;
-
-                // 비마스터 카드 추가
                 GameObject go = Instantiate(myCardItem, im.myHandCardList.transform);
                 go.GetComponentInChildren<TextMeshProUGUI>().text = cardNumber;
 
@@ -86,6 +83,6 @@ public class DeckController : MonoBehaviourPunCallbacks
     {
         GameObject go = PhotonNetwork.Instantiate(prefabName, position, Quaternion.identity);
         Transform parent = GameObject.Find(parentName).transform;
-        go.transform.SetParent(parent, false); // false로 설정하여 위치와 회전을 보존
+        go.transform.SetParent(parent, false);
     }
 }

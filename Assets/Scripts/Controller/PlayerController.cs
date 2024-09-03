@@ -7,12 +7,15 @@ using UnityEngine.UI;
 
 public class PlayerController : MonoBehaviourPunCallbacks
 {
+    #region ÇÊµå
     public TextMeshProUGUI nickName;
+
     protected InGameManager im;
     List<string> myDeck = new List<string>();
     List<string> myHand= new List<string>();
     GameObject uiInGame;
     GameObject myDeckButton;
+    #endregion
     // Start is called before the first frame update
     void Start()
     {

@@ -5,6 +5,8 @@ using UnityEngine.SceneManagement;
 
 public class SplahManager : MonoBehaviour
 {
+    #region ÇÊµå
+    #endregion
     // Start is called before the first frame update
     void Start()
     {

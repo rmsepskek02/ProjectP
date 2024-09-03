@@ -221,7 +221,14 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
         Debug.Log("onClick End");
         turnManager.BeginTurn();
     }
-
+    // 카드 선택 초기화
+    public void InitClickedCard()
+    {
+        clickedMyCardIdx = 0;
+        clickedMyCardNumber = "";
+        clickedYourCardIdx = 0;
+        clickedYourCardNumber = "";
+    }
     // 방 초기화
     void InitRoom()
     {

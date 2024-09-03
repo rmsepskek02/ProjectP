@@ -6,12 +6,14 @@ using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviourPunCallbacks
 {
+    #region ÇÊµå
     public static GameManager instance;
+
     private const int MINWIDTH = 800;
     private const int MINHEIGHT = 300;
     private const int MINHEIGHT_INGAME = 600;
     string currentSceneName;
-
+    #endregion
     private void Awake()
     {
         instance = this;
