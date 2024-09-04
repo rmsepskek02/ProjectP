@@ -28,10 +28,11 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     }
     public void OnClickOpen()
     {
+        // 이거 파괴하고 포톤서버에 등록해서 하나 필드에 깔자
         Transform childCard = im.myHandCardList.transform.GetChild(im.clickedMyCardIdx);
         childCard.SetParent(im.myFieldCardList.transform);
 
-        string yourPrefabName = "Prefabs/Card/MyCard";
+        string yourPrefabName = "Prefabs/Card/OpenCard";
         Vector3 yourSpawnPosition = im.yourFieldCardList.transform.position;
         string yourFieldParentName = im.yourFieldCardList.name;
         string yourHandParentName = im.yourHandCardList.name;
@@ -55,7 +56,7 @@ public class ChoiceController : MonoBehaviourPunCallbacks
 
         childCard.SetParent(im.myFieldCardList.transform);
 
-        string yourPrefabName = "Prefabs/Card/YourCard";
+        string yourPrefabName = "Prefabs/Card/SecretCard";
         Vector3 yourSpawnPosition = im.yourFieldCardList.transform.position;
         string yourFieldParentName = im.yourFieldCardList.name;
         string yourHandParentName = im.yourHandCardList.name;
@@ -80,8 +81,7 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     [PunRPC]
     void SpawnFieldSecretCard(string prefabName, Vector3 position, string parentName, string cardNumber)
     {
-        GameObject cardPrefab = Resources.Load<GameObject>(prefabName);
-        GameObject go = Instantiate(cardPrefab, position, Quaternion.identity);
+        GameObject go = PhotonNetwork.Instantiate(prefabName, position, Quaternion.identity);
         go.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = cardNumber;
         go.transform.GetChild(0).gameObject.SetActive(false);
         Transform parent = GameObject.Find(parentName).transform;
@@ -91,8 +91,7 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     [PunRPC]
     void SpawnFieldOpenCard(string prefabName, Vector3 position, string parentName, string cardNumber)
     {
-        GameObject cardPrefab = Resources.Load<GameObject>(prefabName);
-        GameObject go = Instantiate(cardPrefab, position, Quaternion.identity);
+        GameObject go = PhotonNetwork.Instantiate(prefabName, position, Quaternion.identity);
         go.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = cardNumber;
         Transform parent = GameObject.Find(parentName).transform;
         go.transform.SetParent(parent, false); 

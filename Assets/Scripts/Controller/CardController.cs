@@ -164,18 +164,7 @@ public class CardController : MonoBehaviourPunCallbacks
     {
         Transform parent = GameObject.Find(parentName).transform;
         GameObject card = parent.transform.GetChild(cardIdx).gameObject;
-        PhotonView photonView = card.GetComponent<PhotonView>();
-        if (PhotonNetwork.IsMasterClient)
-        {
-            if (photonView != null)
-                Destroy(card);
-            else
-                PhotonNetwork.Destroy(card);
-        }
-        else
-        {
-            Destroy(card);
-        }
+        Destroy(card);
     }
 
     // 상대방에게 카드 변화를 알림

@@ -159,8 +159,6 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
         foreach (var player in PhotonNetwork.PlayerList)
         {
             playerList.Add(player.ActorNumber);
-            Debug.Log("PLAYERLIST = " + playerList);
-            Debug.Log("PLAYERLIST A = " + player.ActorNumber);
         }
         if (playerList.Count == 2)
         {
@@ -235,11 +233,22 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
     // 방 초기화
     void InitRoom()
     {
-        // TODO 핸드랑 필드랑 덱초기화, 게임 포톤초기화
+        // TODO 게임 포톤초기화
         isStart = false;
         dc.enableDraw = false;
         endButton.interactable = false;
         playerADeck = new List<string> { "1", "2", "3", "4", "5", "1", "2", "3", "4", "5", "1", "2", "3", "4", "5", "1", "2", "3", "4", "5", "+", "+", "-", "-", "X", "X", "%", "%", "Joker", "Joker", };
         playerBDeck = new List<string> { "1", "2", "3", "4", "5", "1", "2", "3", "4", "5", "1", "2", "3", "4", "5", "1", "2", "3", "4", "5", "+", "+", "-", "-", "X", "X", "%", "%", "Joker", "Joker", };
+        DestroyChild(myHandCardList);
+        DestroyChild(myFieldCardList);
+        DestroyChild(yourHandCardList);
+        DestroyChild(yourFieldCardList);
+    }
+    void DestroyChild(GameObject go)
+    {
+        foreach (Transform child in go.transform)
+        {
+            Destroy(child.gameObject);
+        }
     }
 }

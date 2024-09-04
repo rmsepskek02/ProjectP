@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 6098992142396590861}
   - component: {fileID: -980732193392850936}
   m_Layer: 5
-  m_Name: MyCard
+  m_Name: OpenCard
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -235,7 +235,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 9
+  m_text: 
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 4ea3dc37a2a220048b3d134294d46fb5, type: 2}
   m_sharedMaterial: {fileID: -2386823308841601124, guid: 4ea3dc37a2a220048b3d134294d46fb5, type: 2}
