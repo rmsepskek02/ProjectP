@@ -7,6 +7,7 @@ using UnityEngine.UI;
 
 public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
 {
+    #region ÇÊµå
     public static InGameManager instance;
     public PunTurnManager turnManager;
     public List<int> playerList = new List<int>();
@@ -27,7 +28,9 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
     public string clickedMyCardNumber;
     public int clickedYourCardIdx;
     public string clickedYourCardNumber;
+
     DeckController dc;
+    #endregion
     private void Awake()
     {
         instance = this;

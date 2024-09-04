@@ -81,7 +81,8 @@ public class DeckController : MonoBehaviourPunCallbacks
     [PunRPC]
     void SpawnHandCard(string prefabName, Vector3 position, string parentName)
     {
-        GameObject go = PhotonNetwork.Instantiate(prefabName, position, Quaternion.identity);
+        GameObject cardPrefab = Resources.Load<GameObject>(prefabName);
+        GameObject go = Instantiate(cardPrefab, position, Quaternion.identity);
         Transform parent = GameObject.Find(parentName).transform;
         go.transform.SetParent(parent, false);
     }

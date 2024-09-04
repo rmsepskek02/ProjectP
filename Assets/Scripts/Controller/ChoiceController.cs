@@ -80,7 +80,8 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     [PunRPC]
     void SpawnFieldSecretCard(string prefabName, Vector3 position, string parentName, string cardNumber)
     {
-        GameObject go = PhotonNetwork.Instantiate(prefabName, position, Quaternion.identity);
+        GameObject cardPrefab = Resources.Load<GameObject>(prefabName);
+        GameObject go = Instantiate(cardPrefab, position, Quaternion.identity);
         go.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = cardNumber;
         go.transform.GetChild(0).gameObject.SetActive(false);
         Transform parent = GameObject.Find(parentName).transform;
@@ -90,7 +91,8 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     [PunRPC]
     void SpawnFieldOpenCard(string prefabName, Vector3 position, string parentName, string cardNumber)
     {
-        GameObject go = PhotonNetwork.Instantiate(prefabName, position, Quaternion.identity);
+        GameObject cardPrefab = Resources.Load<GameObject>(prefabName);
+        GameObject go = Instantiate(cardPrefab, position, Quaternion.identity);
         go.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = cardNumber;
         Transform parent = GameObject.Find(parentName).transform;
         go.transform.SetParent(parent, false); 
@@ -100,6 +102,6 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     void RemoveHandCard(string parentName)
     {
         Transform parent = GameObject.Find(parentName).transform;
-        PhotonNetwork.Destroy(parent.GetChild(0).gameObject);
+        Destroy(parent.GetChild(0).gameObject);
     }
 }
