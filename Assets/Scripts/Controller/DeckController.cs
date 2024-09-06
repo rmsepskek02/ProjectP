@@ -37,8 +37,10 @@ public class DeckController : MonoBehaviourPunCallbacks
     public void DrawCard(string cardNumber)
     {
         if (cardNumber == "") return;
-
+        string myPrefabName = "Prefabs/Card/OpenCard";
         string yourPrefabName = "Prefabs/Card/SecretCard";
+        string myParentName = im.myHandCardList.name;
+        Vector3 mySpawnPosition = im.myHandCardList.transform.position;
         Vector3 yourSpawnPosition = im.yourHandCardList.transform.position;
         string yourParentName = im.yourHandCardList.name;
 
@@ -48,11 +50,13 @@ public class DeckController : MonoBehaviourPunCallbacks
             // 마스터 클릭
             if (PhotonNetwork.LocalPlayer.ActorNumber == im.playerList[0])
             {
-                GameObject go = Instantiate(myCardItem, im.myHandCardList.transform);
+                GameObject go = PhotonNetwork.Instantiate(myPrefabName, mySpawnPosition, Quaternion.identity);
+                Transform parent = GameObject.Find(myParentName).transform;
+                go.transform.SetParent(parent, false);
                 go.GetComponentInChildren<TextMeshProUGUI>().text = cardNumber;
 
                 // 비마스터에게 마스터가 카드가 추가 되었다는 것을 보여줌
-                photonView.RPC("SpawnHandCard", RpcTarget.All, yourPrefabName, yourSpawnPosition, yourParentName);
+                photonView.RPC("SpawnHandCard", RpcTarget.Others, yourPrefabName, yourSpawnPosition, yourParentName);
             }
             else if (PhotonNetwork.LocalPlayer.ActorNumber == im.playerList[1])
                 return;
@@ -67,11 +71,13 @@ public class DeckController : MonoBehaviourPunCallbacks
                 return;
             else if (PhotonNetwork.LocalPlayer.ActorNumber == im.playerList[1])
             {
-                GameObject go = Instantiate(myCardItem, im.myHandCardList.transform);
+                GameObject go = PhotonNetwork.Instantiate(myPrefabName, mySpawnPosition, Quaternion.identity);
+                Transform parent = GameObject.Find(myParentName).transform;
+                go.transform.SetParent(parent, false);
                 go.GetComponentInChildren<TextMeshProUGUI>().text = cardNumber;
 
                 // 마스터에게 비마스터가 카드가 추가 되었다는 것을 보여줌
-                photonView.RPC("SpawnHandCard", RpcTarget.All, yourPrefabName, yourSpawnPosition, yourParentName);
+                photonView.RPC("SpawnHandCard", RpcTarget.Others, yourPrefabName, yourSpawnPosition, yourParentName);
             }
             else { }
         }
@@ -81,8 +87,7 @@ public class DeckController : MonoBehaviourPunCallbacks
     [PunRPC]
     void SpawnHandCard(string prefabName, Vector3 position, string parentName)
     {
-        GameObject card = Resources.Load<GameObject>(prefabName);
-        GameObject go = Instantiate(card, position, Quaternion.identity);
+        GameObject go = PhotonNetwork.Instantiate(prefabName, position, Quaternion.identity);
         Transform parent = GameObject.Find(parentName).transform;
         go.transform.SetParent(parent, false);
     }

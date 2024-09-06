@@ -133,13 +133,13 @@ public class CardController : MonoBehaviourPunCallbacks
             myFieldCard.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = _result.ToString();
             // 상대카드 파괴
             photonView.RPC("DestroyFieldCard", RpcTarget.Others, myCardParentName, yourCardIdx);
-            Destroy(yourFieldCard);
+            PhotonNetwork.Destroy(yourFieldCard);
         }
         else if (_result < 0)
         {
             // 내 카드 파괴
             photonView.RPC("DestroyFieldCard", RpcTarget.Others, yourCardParentName, myCardIdx);
-            Destroy(myFieldCard);
+            PhotonNetwork.Destroy(myFieldCard);
             // 상대카드 사칙연산 결과 대입
             photonView.RPC("ChangeFieldCard", RpcTarget.Others, myCardParentName, yourCardIdx, Mathf.Abs(_result));
             yourFieldCard.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = Mathf.Abs(_result).ToString();
@@ -148,10 +148,10 @@ public class CardController : MonoBehaviourPunCallbacks
         {
             // 내 카드 파괴
             photonView.RPC("DestroyFieldCard", RpcTarget.Others, yourCardParentName, myCardIdx);
-            Destroy(myFieldCard);
+            PhotonNetwork.Destroy(myFieldCard);
             // 상대카드 파괴
             photonView.RPC("DestroyFieldCard", RpcTarget.Others, myCardParentName, yourCardIdx);
-            Destroy(yourFieldCard);
+            PhotonNetwork.Destroy(yourFieldCard);
         }
         // 클릭한 카드 데이터 초기화
         im.InitClickedCard();
@@ -164,7 +164,7 @@ public class CardController : MonoBehaviourPunCallbacks
     {
         Transform parent = GameObject.Find(parentName).transform;
         GameObject card = parent.transform.GetChild(cardIdx).gameObject;
-        Destroy(card);
+        PhotonNetwork.Destroy(card);
     }
 
     // 상대방에게 카드 변화를 알림

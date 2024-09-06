@@ -28,7 +28,6 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     }
     public void OnClickOpen()
     {
-        // 이거 파괴하고 포톤서버에 등록해서 하나 필드에 깔자
         Transform childCard = im.myHandCardList.transform.GetChild(im.clickedMyCardIdx);
         childCard.SetParent(im.myFieldCardList.transform);
 
@@ -101,6 +100,6 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     void RemoveHandCard(string parentName)
     {
         Transform parent = GameObject.Find(parentName).transform;
-        Destroy(parent.GetChild(0).gameObject);
+        PhotonNetwork.Destroy(parent.GetChild(0).gameObject);
     }
 }
