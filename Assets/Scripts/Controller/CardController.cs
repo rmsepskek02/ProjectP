@@ -73,17 +73,26 @@ public class CardController : MonoBehaviourPunCallbacks
         }
         else if (parentName == "HorizontalMyFieldCard")
         {
-            // TODO 다른 카드를 선택하도록 유도
-            // TODO 한번 더 누르면 취소
             isAttack = !isAttack;
             if (isAttack)
             {
-                // TODO 공격 준비 이펙트
+                foreach(Transform child in im.yourFieldCardList.transform)
+                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
+                foreach (Transform child in im.myFieldCardList.transform)
+                {
+                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.WhiteColor);
+                    child.GetComponent<CardController>().isAttack = false;
+                }
+                gameObject.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.GreenColor);
+                isAttack = true;
+
                 im.clickedMyCardIdx = gameObject.transform.GetSiblingIndex();
                 im.clickedMyCardNumber = gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text;
             }
             else
             {
+                gameObject.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.WhiteColor);
+                im.ResetYourFieldCardColor();
                 im.clickedMyCardNumber = "";
             }
         }
@@ -116,7 +125,6 @@ public class CardController : MonoBehaviourPunCallbacks
     {
         return int.TryParse(text, out _);
     }
-    
 
     // 카드 전투
     void FightCard(int _result, int myCardIdx, int yourCardIdx)
@@ -152,10 +160,13 @@ public class CardController : MonoBehaviourPunCallbacks
             // 상대카드 파괴
             photonView.RPC("DestroyFieldCard", RpcTarget.Others, myCardParentName, yourCardIdx);
             PhotonNetwork.Destroy(yourFieldCard);
+            im.ResetYourFieldCardColor();
         }
         // 클릭한 카드 데이터 초기화
         im.InitClickedCard();
         isAttack = false;
+        im.ResetMyFieldCardColor();
+        im.ResetYourFieldCardColor();
     }
 
     // 상대방에게 카드 파괴를 알림

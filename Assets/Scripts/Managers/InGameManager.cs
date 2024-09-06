@@ -219,6 +219,8 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
     public void OnClickEnd()
     {
         turnManager.SendMove(null, true);
+        ResetYourFieldCardColor();
+        ResetMyFieldCardColor();
         Debug.Log("onClick End");
         turnManager.BeginTurn();
     }
@@ -229,6 +231,24 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
         clickedMyCardNumber = "";
         clickedYourCardIdx = 0;
         clickedYourCardNumber = "";
+    }    // 상대 필드카드 색상 초기화
+    public void ResetMyFieldCardColor()
+    {
+        foreach (Transform child in myFieldCardList.transform)
+        {
+            child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.WhiteColor);
+        }
+    }
+    // 상대 필드카드 색상 초기화
+    public void ResetYourFieldCardColor()
+    {
+        foreach (Transform child in yourFieldCardList.transform)
+        {
+            if (child.GetChild(0).gameObject.activeSelf)
+                child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.WhiteColor);
+            else
+                child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.SecretColor);
+        }
     }
     // 방 초기화
     void InitRoom()

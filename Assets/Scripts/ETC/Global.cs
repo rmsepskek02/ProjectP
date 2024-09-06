@@ -9,8 +9,8 @@ public class Global
         public static readonly string WhiteColor = "#FFFFFF";
         public static readonly string OpenColor = "#FFFFFF";
         public static readonly string SecretColor = "#616161";
-        public static readonly string GreenColor = "#00FF00";
-        public static readonly string BlueColor = "#0000FF";
+        public static readonly string GreenColor = "#28B700";
+        public static readonly string BlueColor = "#6464DE";
 
         // 어디에서든 사용할 수 있도록 public으로 설정
         public static Color ChangeColor(string hexColor)
