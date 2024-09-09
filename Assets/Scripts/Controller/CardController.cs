@@ -63,6 +63,15 @@ public class CardController : MonoBehaviourPunCallbacks
             im.clickedMyCardNumber = gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text;
             if (CheckIsNumber(im.clickedMyCardNumber) == false)
             {
+                if (im.clickedMyCardNumber == "Joker")
+                {
+                    im.joker.SetActive(true);
+                    Debug.Log("JOKER CLICK");
+                }
+                else if (im.clickedMyCardNumber == "+")
+                {
+                    Debug.Log("+");
+                }
                 // TODO 사칙연산, JOKER 처리
                 return;
             }

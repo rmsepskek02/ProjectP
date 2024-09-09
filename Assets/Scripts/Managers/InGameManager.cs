@@ -24,6 +24,7 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
     public bool isStart;
     public GameObject uiInGame;
     public GameObject choice;
+    public GameObject joker;
     public int clickedMyCardIdx;
     public string clickedMyCardNumber;
     public int clickedYourCardIdx;
@@ -41,6 +42,7 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
         turnManager = GetComponent<PunTurnManager>();
         turnManager.TurnManagerListener = this;
         choice.SetActive(false);
+        joker.SetActive(false);
         InitRoom();
         CheckPlayers();
     }
