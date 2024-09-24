@@ -238,7 +238,13 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
     {
         foreach (Transform child in myFieldCardList.transform)
         {
-            child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.WhiteColor);
+            Color childColor = child.GetComponent<Image>().color;
+            Color openColor = Global.Colors.ChangeColor(Global.Colors.OpenColor);
+            Color secretColor = Global.Colors.ChangeColor(Global.Colors.SecretColor);
+            if (childColor != openColor && childColor != secretColor)
+            {
+                child.GetComponent<Image>().color = child.GetComponent<CardController>().originColor;
+            }
         }
     }
     // 상대 필드카드 색상 초기화

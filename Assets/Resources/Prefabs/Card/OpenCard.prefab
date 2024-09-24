@@ -171,6 +171,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   cardPosition: 
+  originColor: {r: 0, g: 0, b: 0, a: 0}
 --- !u!114 &7658071914318604934
 MonoBehaviour:
   m_ObjectHideFlags: 0

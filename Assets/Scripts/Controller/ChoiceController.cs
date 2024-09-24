@@ -52,6 +52,7 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     {
         Transform childCard = im.myHandCardList.transform.GetChild(im.clickedMyCardIdx);
         childCard.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.SecretColor);
+        childCard.GetComponent<CardController>().originColor = Global.Colors.ChangeColor(Global.Colors.SecretColor);
 
         childCard.SetParent(im.myFieldCardList.transform);
 

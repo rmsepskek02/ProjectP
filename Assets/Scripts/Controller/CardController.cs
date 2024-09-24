@@ -8,6 +8,7 @@ public class CardController : MonoBehaviourPunCallbacks
 {
     #region 필드
     public string cardPosition;
+    public Color originColor;
 
     Transform myFieldCardListContent;
     Transform yourFieldCardListContent;
@@ -20,6 +21,7 @@ public class CardController : MonoBehaviourPunCallbacks
     {
         im = InGameManager.instance;
         turnManager = im.GetComponent<PunTurnManager>();
+        originColor = gameObject.GetComponent<Image>().color;
     }
 
     // Update is called once per frame
@@ -57,6 +59,7 @@ public class CardController : MonoBehaviourPunCallbacks
     void CardEvent()
     {
         string parentName = gameObject.transform.parent.name;
+        // TODO 카드는 최대 5장까지만 필드에 낼 수 있도록 수정
         if (parentName == "HorizontalMyCard")
         {
             im.clickedMyCardIdx = gameObject.transform.GetSiblingIndex();
@@ -89,7 +92,7 @@ public class CardController : MonoBehaviourPunCallbacks
                     child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
                 foreach (Transform child in im.myFieldCardList.transform)
                 {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.WhiteColor);
+                    child.GetComponent<Image>().color = child.GetComponent<CardController>().originColor;
                     child.GetComponent<CardController>().isAttack = false;
                 }
                 gameObject.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.GreenColor);
@@ -100,7 +103,7 @@ public class CardController : MonoBehaviourPunCallbacks
             }
             else
             {
-                gameObject.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.WhiteColor);
+                gameObject.GetComponent<Image>().color = originColor;
                 im.ResetYourFieldCardColor();
                 im.clickedMyCardNumber = "";
             }
@@ -176,6 +179,8 @@ public class CardController : MonoBehaviourPunCallbacks
         isAttack = false;
         im.ResetMyFieldCardColor();
         im.ResetYourFieldCardColor();
+        gameObject.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.OpenColor);
+        originColor = Global.Colors.ChangeColor(Global.Colors.OpenColor);
     }
 
     // 상대방에게 카드 파괴를 알림
@@ -193,9 +198,10 @@ public class CardController : MonoBehaviourPunCallbacks
     {
         Transform parent = GameObject.Find(parentName).transform;
         GameObject card = parent.transform.GetChild(cardIdx).gameObject;
-
+        Transform text = card.transform.GetChild(0);
         // Card Number 변경
-        card.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = changedNumber.ToString();
+        text.GetComponent<TextMeshProUGUI>().text = changedNumber.ToString();
+        text.gameObject.SetActive(true);
         // 색상변경
         card.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.WhiteColor);
     }
