@@ -2,16 +2,21 @@ using Photon.Pun;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class JokerController : MonoBehaviourPunCallbacks
 {
+    public GameObject myFieldCardList;
+    public GameObject yourFieldCardList;
     InGameManager im;
     DeckController dc;
+    public GameObject joker;
     // Start is called before the first frame update
     void Start()
     {
         im = InGameManager.instance;
         dc = im.uiInGame.transform.Find("MyDeck").GetComponent<DeckController>();
+        joker = gameObject.transform.GetChild(0).gameObject;
     }
 
     // Update is called once per frame
@@ -40,23 +45,31 @@ public class JokerController : MonoBehaviourPunCallbacks
         // 파괴된거 알림
         photonView.RPC("RemoveHandCard", RpcTarget.Others, yourHandParentName);
 
-        gameObject.SetActive(false);
+        joker.SetActive(false);
     }
     public void OnClickCopy()
     {
         Debug.Log("SELECT OnClickCopy");
-
-        gameObject.SetActive(false);
+        foreach (Transform child in myFieldCardList.transform)
+        {
+            child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.YellowColor);
+            im.isCopy = true;
+        }
+        joker.SetActive(false);
     }
     public void OnClickDelete()
     {
         Debug.Log("SELECT OnClickDelete");
-
-        gameObject.SetActive(false);
+        foreach (Transform child in yourFieldCardList.transform)
+        {
+            child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.RedColor);
+            im.isDelete = true;
+        }
+        joker.SetActive(false);
     }
     public void OnClickCancel()
     {
-        gameObject.SetActive(false);
+        joker.SetActive(false);
     }
 
     // 상대방에게 핸드카드 제거를 알림

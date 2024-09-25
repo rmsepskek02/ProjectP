@@ -37,7 +37,14 @@ public class CardController : MonoBehaviourPunCallbacks
         {
             if (PhotonNetwork.LocalPlayer.ActorNumber == im.playerList[0])
             {
-                CardEvent();
+                if (im.isCopy || im.isDelete)
+                {
+                    jokerEvent();
+                }
+                else
+                {
+                    CardEvent();
+                }
             }
             else if (PhotonNetwork.LocalPlayer.ActorNumber == im.playerList[1])
                 return;
@@ -52,6 +59,25 @@ public class CardController : MonoBehaviourPunCallbacks
                 CardEvent();
             }
             else { }
+        }
+    }
+    
+    void jokerEvent()
+    {
+        string parentName = gameObject.transform.parent.name;
+        Transform parent = gameObject.transform.parent.transform;
+        if (parentName == "HorizontalMyFieldCard")
+        {
+            im.clickedMyCardIdx = gameObject.transform.GetSiblingIndex();
+            GameObject card = Instantiate(parent.GetChild(im.clickedMyCardIdx).gameObject, parent);
+            im.isCopy = false;
+            // TODO RPC도 해야함
+        }
+        else if (parentName == "HorizontalYourFieldCard")
+        {
+            Destroy(gameObject);
+            im.isDelete = false;
+            // TODO RPC도 해야함
         }
     }
 
@@ -179,8 +205,9 @@ public class CardController : MonoBehaviourPunCallbacks
         isAttack = false;
         im.ResetMyFieldCardColor();
         im.ResetYourFieldCardColor();
-        gameObject.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.OpenColor);
-        originColor = Global.Colors.ChangeColor(Global.Colors.OpenColor);
+
+        myFieldCard.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.OpenColor);
+        myFieldCard.GetComponent<CardController>().originColor = Global.Colors.ChangeColor(Global.Colors.OpenColor);
     }
 
     // 상대방에게 카드 파괴를 알림

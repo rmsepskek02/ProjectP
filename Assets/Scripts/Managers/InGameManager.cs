@@ -29,6 +29,8 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
     public string clickedMyCardNumber;
     public int clickedYourCardIdx;
     public string clickedYourCardNumber;
+    public bool isCopy;
+    public bool isDelete;
 
     DeckController dc;
     #endregion
@@ -233,7 +235,8 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
         clickedMyCardNumber = "";
         clickedYourCardIdx = 0;
         clickedYourCardNumber = "";
-    }    // 상대 필드카드 색상 초기화
+    }    
+    // 내 필드카드 색상 초기화
     public void ResetMyFieldCardColor()
     {
         foreach (Transform child in myFieldCardList.transform)
