@@ -37,14 +37,7 @@ public class CardController : MonoBehaviourPunCallbacks
         {
             if (PhotonNetwork.LocalPlayer.ActorNumber == im.playerList[0])
             {
-                if (im.isCopy || im.isDelete)
-                {
-                    jokerEvent();
-                }
-                else
-                {
-                    CardEvent();
-                }
+                CardEvent();
             }
             else if (PhotonNetwork.LocalPlayer.ActorNumber == im.playerList[1])
                 return;
@@ -59,25 +52,6 @@ public class CardController : MonoBehaviourPunCallbacks
                 CardEvent();
             }
             else { }
-        }
-    }
-    
-    void jokerEvent()
-    {
-        string parentName = gameObject.transform.parent.name;
-        Transform parent = gameObject.transform.parent.transform;
-        if (parentName == "HorizontalMyFieldCard")
-        {
-            im.clickedMyCardIdx = gameObject.transform.GetSiblingIndex();
-            GameObject card = Instantiate(parent.GetChild(im.clickedMyCardIdx).gameObject, parent);
-            im.isCopy = false;
-            // TODO RPC도 해야함
-        }
-        else if (parentName == "HorizontalYourFieldCard")
-        {
-            Destroy(gameObject);
-            im.isDelete = false;
-            // TODO RPC도 해야함
         }
     }
 
@@ -111,6 +85,20 @@ public class CardController : MonoBehaviourPunCallbacks
         }
         else if (parentName == "HorizontalMyFieldCard")
         {
+            // joker 이벤트
+            if (im.isCopy == true)
+            {
+                Instantiate(this.gameObject, transform.parent);
+                im.isCopy = false;
+                PhotonNetwork.Destroy(im.myHandCardList.transform.GetChild(im.clickedMyCardIdx).gameObject);
+
+                im.ResetMyFieldCardColor();
+                im.ResetYourFieldCardColor();
+
+                //TODO RPC
+
+                return;
+            }
             isAttack = !isAttack;
             if (isAttack)
             {
@@ -136,6 +124,20 @@ public class CardController : MonoBehaviourPunCallbacks
         }
         else if (parentName == "HorizontalYourFieldCard")
         {
+            // joker 이벤트
+            if (im.isDelete == true)
+            {
+                Destroy(this.gameObject);
+                PhotonNetwork.Destroy(im.myHandCardList.transform.GetChild(im.clickedMyCardIdx).gameObject);
+                im.isDelete = false;
+
+                im.ResetMyFieldCardColor();
+                im.ResetYourFieldCardColor();
+
+                //TODO RPC
+
+                return;
+            }
             im.clickedYourCardIdx = gameObject.transform.GetSiblingIndex();
             im.clickedYourCardNumber = gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text;
 
