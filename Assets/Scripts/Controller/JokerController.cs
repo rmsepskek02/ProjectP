@@ -38,12 +38,7 @@ public class JokerController : MonoBehaviourPunCallbacks
         dc.DrawCard(removeCard2);
         dc.DrawCard(removeCard3);
 
-        string yourHandParentName = im.yourHandCardList.name;
-
-        // 사용한 Joker Card 파괴
-        PhotonNetwork.Destroy(im.myHandCardList.transform.GetChild(im.clickedMyCardIdx).gameObject);
-        // 파괴된거 알림
-        photonView.RPC("RemoveHandCard", RpcTarget.Others, yourHandParentName);
+        destroyJoker();
 
         joker.SetActive(false);
     }
@@ -55,6 +50,9 @@ public class JokerController : MonoBehaviourPunCallbacks
             child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.YellowColor);
             im.isCopy = true;
         }
+
+        destroyJoker();
+
         joker.SetActive(false);
     }
     public void OnClickDelete()
@@ -65,11 +63,24 @@ public class JokerController : MonoBehaviourPunCallbacks
             child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.RedColor);
             im.isDelete = true;
         }
+
+        destroyJoker();
+
         joker.SetActive(false);
     }
     public void OnClickCancel()
     {
         joker.SetActive(false);
+    }
+
+    public void destroyJoker()
+    {
+        string yourHandParentName = im.yourHandCardList.name;
+
+        // 사용한 Joker Card 파괴
+        PhotonNetwork.Destroy(im.myHandCardList.transform.GetChild(im.clickedMyCardIdx).gameObject);
+        // 파괴된거 알림
+        photonView.RPC("RemoveHandCard", RpcTarget.Others, yourHandParentName);
     }
 
     // 상대방에게 핸드카드 제거를 알림

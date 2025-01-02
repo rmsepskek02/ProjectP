@@ -53,6 +53,7 @@ MonoBehaviour:
   - SpawnFieldSecretCard
   - ChangeFieldCard
   - DestroyFieldCard
+  - RequestDestroyObject
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

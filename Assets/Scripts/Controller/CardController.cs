@@ -58,7 +58,11 @@ public class CardController : MonoBehaviourPunCallbacks
     // 카드 클릭으로 발생하는 이벤트 함수 - TODO 구현할작업도 많고 정리도해야함
     void CardEvent()
     {
+        string openName = "Prefabs/Card/OpenCard";
+        string secretName = "Prefabs/Card/SecretCard";
         string parentName = gameObject.transform.parent.name;
+        string cardNumber = transform.GetChild(0).GetComponent<TextMeshProUGUI>().text;
+        Debug.Log("CARDNUMBER = " + cardNumber);
         // TODO 카드는 최대 5장까지만 필드에 낼 수 있도록 수정
         if (parentName == "HorizontalMyCard")
         {
@@ -88,14 +92,24 @@ public class CardController : MonoBehaviourPunCallbacks
             // joker 이벤트
             if (im.isCopy == true)
             {
-                Instantiate(this.gameObject, transform.parent);
+                //TODO RPC
+                if(originColor == Global.Colors.ChangeColor(Global.Colors.OpenColor))
+                {
+                    // 상대방에게 내 필드에 카드 추가를 알리기
+                    photonView.RPC("SpawnHandCard", RpcTarget.Others, openName, im.yourFieldCardList.transform.position, im.yourFieldCardList.name, cardNumber, true);
+                    // 내 화면에서 내 필드에 추가하기
+                    Instantiate(this.gameObject, transform.parent);
+                }
+                else if(originColor == Global.Colors.ChangeColor(Global.Colors.SecretColor))
+                {
+                    photonView.RPC("SpawnHandCard", RpcTarget.Others, secretName, im.yourFieldCardList.transform.position, im.yourFieldCardList.name, cardNumber, false);
+
+                    Instantiate(this.gameObject, transform.parent);
+                }
                 im.isCopy = false;
-                PhotonNetwork.Destroy(im.myHandCardList.transform.GetChild(im.clickedMyCardIdx).gameObject);
 
                 im.ResetMyFieldCardColor();
                 im.ResetYourFieldCardColor();
-
-                //TODO RPC
 
                 return;
             }
@@ -128,7 +142,6 @@ public class CardController : MonoBehaviourPunCallbacks
             if (im.isDelete == true)
             {
                 Destroy(this.gameObject);
-                PhotonNetwork.Destroy(im.myHandCardList.transform.GetChild(im.clickedMyCardIdx).gameObject);
                 im.isDelete = false;
 
                 im.ResetMyFieldCardColor();
@@ -211,6 +224,24 @@ public class CardController : MonoBehaviourPunCallbacks
         myFieldCard.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.OpenColor);
         myFieldCard.GetComponent<CardController>().originColor = Global.Colors.ChangeColor(Global.Colors.OpenColor);
     }
+    
+    //public void DestroyObjectViaMaster()
+    //{
+    //    photonView.RPC("RequestDestroyObject", RpcTarget.MasterClient, photonView.ViewID);
+    //}
+    //// MasterClient에게 RPC 호출
+    //[PunRPC]
+    //public void RequestDestroyObject(int viewID)
+    //{
+    //    if (PhotonNetwork.IsMasterClient)
+    //    {
+    //        PhotonView targetView = PhotonView.Find(viewID);
+    //        if (targetView != null)
+    //        {
+    //            PhotonNetwork.Destroy(targetView.gameObject);
+    //        }
+    //    }
+    //}
 
     // 상대방에게 카드 파괴를 알림
     [PunRPC]
@@ -218,6 +249,15 @@ public class CardController : MonoBehaviourPunCallbacks
     {
         Transform parent = GameObject.Find(parentName).transform;
         GameObject card = parent.transform.GetChild(cardIdx).gameObject;
+
+        // TODO 소유권 관련 파괴하는 방법 구현 필요
+        // 마스터클라이언트가 COPY한 카드가 파괴되지 않는 현상
+        //if (!photonView.IsMine)
+        //{
+        //    // 소유권을 현재 클라이언트로 이전
+        //    photonView.RequestOwnership();
+        //}
+        //DestroyObjectViaMaster();
         PhotonNetwork.Destroy(card);
     }
 
@@ -233,5 +273,19 @@ public class CardController : MonoBehaviourPunCallbacks
         text.gameObject.SetActive(true);
         // 색상변경
         card.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.WhiteColor);
+    }
+
+    // 상대방에게 카드 복사를 알림
+    [PunRPC]
+    void SpawnHandCard(string prefabName, Vector3 position, string parentName, string number, bool isOpen)
+    {
+        GameObject go = PhotonNetwork.Instantiate(prefabName, position, Quaternion.identity);
+        Transform parent = GameObject.Find(parentName).transform;
+        go.transform.SetParent(parent, false);
+        int childCount = parent.childCount;
+        GameObject card = parent.transform.GetChild(childCount-1).gameObject;
+        Transform text = card.transform.GetChild(0);
+        text.GetComponent<TextMeshProUGUI>().text = number.ToString();
+        text.gameObject.SetActive(isOpen);
     }
 }
