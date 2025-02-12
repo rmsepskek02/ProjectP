@@ -73,13 +73,24 @@ public class CardController : MonoBehaviourPunCallbacks
                 if (im.clickedMyCardNumber == "Joker")
                 {
                     im.joker.SetActive(true);
-                    Debug.Log("JOKER CLICK");
                 }
                 else if (im.clickedMyCardNumber == "+")
                 {
                     Debug.Log("+");
                 }
-                // TODO 사칙연산, JOKER 처리
+                else if (im.clickedMyCardNumber == "-")
+                {
+                    Debug.Log("-");
+                }
+                else if (im.clickedMyCardNumber == "X")
+                {
+                    Debug.Log("X");
+                }
+                else if (im.clickedMyCardNumber == "%")
+                {
+                    Debug.Log("%");
+                }
+                // TODO 사칙연산
                 return;
             }
             else
@@ -150,14 +161,12 @@ public class CardController : MonoBehaviourPunCallbacks
             // joker 이벤트
             if (im.isDelete == true)
             {
-                PhotonNetwork.Destroy(this.gameObject);
-                im.isDelete = false;
-
                 im.ResetMyFieldCardColor();
                 im.ResetYourFieldCardColor();
 
-                //TODO RPC ??????????????????????????
-                photonView.RPC("DestroyFieldCard", RpcTarget.Others, "HorizontalMyFieldCard", im.clickedYourCardIdx);
+                photonView.RPC("DestroyFieldCard", RpcTarget.Others, im.myFieldCardList.name, im.clickedYourCardIdx);
+                PhotonNetwork.Destroy(im.yourFieldCardList.transform.GetChild(im.clickedYourCardIdx).gameObject);
+                im.isDelete = false;
                 return;
             }
 

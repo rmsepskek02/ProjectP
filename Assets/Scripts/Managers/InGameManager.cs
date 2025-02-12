@@ -273,15 +273,17 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
             "1", "2", "3", "4", "5", 
             //"1", "2", "3", "4", "5", 
             //"1", "2", "3", "4", "5", 
-            //"+", "+", "-", "-", "X", "X", "%", "%", 
-            "Joker", "Joker", };
+            "+", "+", "-", "-", "X", "X", "%", "%", 
+            //"Joker", "Joker", 
+        };
         playerBDeck = new List<string> { 
             "1", "2", "3", "4", "5", "" +
             "1", "2", "3", "4", "5", 
             //"1", "2", "3", "4", "5", 
             //"1", "2", "3", "4", "5",
-            //"+", "+", "-", "-", "X", "X", "%", "%", 
-            "Joker", "Joker", };
+            "+", "+", "-", "-", "X", "X", "%", "%",
+            //"Joker", "Joker", 
+        };
         DestroyChild(myHandCardList);
         DestroyChild(myFieldCardList);
         DestroyChild(yourHandCardList);
