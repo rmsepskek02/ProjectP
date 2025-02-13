@@ -31,6 +31,10 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
     public string clickedYourCardNumber;
     public bool isCopy;
     public bool isDelete;
+    public bool isPlus;
+    public bool isMinus;
+    public bool isMultiple;
+    public bool isDivision;
 
     DeckController dc;
     #endregion

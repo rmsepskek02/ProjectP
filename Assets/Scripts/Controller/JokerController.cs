@@ -38,7 +38,7 @@ public class JokerController : MonoBehaviourPunCallbacks
         dc.DrawCard(removeCard2);
         dc.DrawCard(removeCard3);
 
-        destroyJoker();
+        DestroyJoker();
 
         joker.SetActive(false);
     }
@@ -51,7 +51,7 @@ public class JokerController : MonoBehaviourPunCallbacks
             im.isCopy = true;
         }
 
-        destroyJoker();
+        DestroyJoker();
 
         joker.SetActive(false);
     }
@@ -64,7 +64,7 @@ public class JokerController : MonoBehaviourPunCallbacks
             im.isDelete = true;
         }
 
-        destroyJoker();
+        DestroyJoker();
 
         joker.SetActive(false);
     }
@@ -73,7 +73,7 @@ public class JokerController : MonoBehaviourPunCallbacks
         joker.SetActive(false);
     }
 
-    public void destroyJoker()
+    public void DestroyJoker()
     {
         string yourHandParentName = im.yourHandCardList.name;
 
