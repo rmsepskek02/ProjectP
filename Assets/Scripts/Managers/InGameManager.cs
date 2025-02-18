@@ -29,6 +29,9 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
     public string clickedMyCardNumber;
     public int clickedYourCardIdx;
     public string clickedYourCardNumber;
+    public string firstCardNumber = "";
+    public Transform firstCard;
+    public string secondCardNumber = "";
     public bool isCopy;
     public bool isDelete;
     public bool isPlus;
