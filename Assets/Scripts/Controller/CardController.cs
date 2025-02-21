@@ -2,6 +2,7 @@ using Photon.Pun;
 using Photon.Pun.UtilityScripts;
 using System.Reflection;
 using TMPro;
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -127,7 +128,7 @@ public class CardController : MonoBehaviourPunCallbacks
                     photonView.RPC("RemoveHandCard", RpcTarget.Others, im.yourHandCardList.name);
                 }
                 isAttack = false;
-                
+
                 return;
             }
             else
@@ -172,12 +173,12 @@ public class CardController : MonoBehaviourPunCallbacks
             // plus 이벤트
             if (im.isPlus == true)
             {
-                if(im.firstCardNumber != "")
+                if (im.firstCardNumber != "")
                 {
                     im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
                     int idx = im.firstCard.GetSiblingIndex();
                     int number = int.Parse(im.firstCardNumber) + int.Parse(im.secondCardNumber);
-                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>().text = number.ToString();
+                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = number.ToString();
                     photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalYourFieldCard", idx, number);
 
                     im.isPlus = false;
@@ -212,7 +213,7 @@ public class CardController : MonoBehaviourPunCallbacks
                     im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
                     int idx = im.firstCard.GetSiblingIndex();
                     int number = int.Parse(im.firstCardNumber) * int.Parse(im.secondCardNumber);
-                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>().text = number.ToString();
+                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = number.ToString();
                     photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalYourFieldCard", idx, number);
 
                     im.isMultiple = false;
@@ -244,6 +245,29 @@ public class CardController : MonoBehaviourPunCallbacks
             // minus 이벤트
             if (im.isMinus == true)
             {
+                if (im.firstCardNumber != "")
+                {
+                    im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
+                    int idx = im.firstCard.GetSiblingIndex();
+                    int number = int.Parse(im.firstCardNumber) - int.Parse(im.secondCardNumber);
+                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = number.ToString();
+                    if (number <= 0)
+                    {
+                        PhotonNetwork.Destroy(im.yourFieldCardList.transform.GetChild(im.firstCard.GetSiblingIndex()).gameObject);
+                    }
+                    photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalMyFieldCard", idx, number);
+
+                    im.isMinus = false;
+                    im.ResetMyFieldCardColor();
+                    im.ResetYourFieldCardColor();
+                    im.clickedMyCardNumber = "";
+                    im.firstCard = null;
+                    im.firstCardNumber = "";
+                    im.secondCardNumber = "";
+
+                    return;
+                }
+
                 im.firstCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
                 im.firstCard = this.gameObject.transform;
                 im.ResetMyFieldCardColor();
@@ -260,6 +284,30 @@ public class CardController : MonoBehaviourPunCallbacks
             // division 이벤트
             if (im.isDivision == true)
             {
+                if (im.firstCardNumber != "")
+                {
+                    im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
+                    int idx = im.firstCard.GetSiblingIndex();
+                    int quotient = int.Parse(im.firstCardNumber) / int.Parse(im.secondCardNumber);
+                    int remainder = int.Parse(im.firstCardNumber) % int.Parse(im.secondCardNumber);
+                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = quotient.ToString();
+                    if (quotient <= 0)
+                    {
+                        PhotonNetwork.Destroy(im.yourFieldCardList.transform.GetChild(im.firstCard.GetSiblingIndex()).gameObject);
+                    }
+                    photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalMyFieldCard", idx, quotient);
+
+                    im.isDivision = false;
+                    im.ResetMyFieldCardColor();
+                    im.ResetYourFieldCardColor();
+                    im.clickedMyCardNumber = "";
+                    im.firstCard = null;
+                    im.firstCardNumber = "";
+                    im.secondCardNumber = "";
+
+                    return;
+                }
+
                 im.firstCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
                 im.firstCard = this.gameObject.transform;
                 im.ResetMyFieldCardColor();
@@ -323,7 +371,11 @@ public class CardController : MonoBehaviourPunCallbacks
                     im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
                     int idx = im.firstCard.GetSiblingIndex();
                     int number = int.Parse(im.firstCardNumber) - int.Parse(im.secondCardNumber);
-                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>().text = number.ToString();
+                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = number.ToString();
+                    if (number <= 0)
+                    {
+                        PhotonNetwork.Destroy(im.yourFieldCardList.transform.GetChild(im.firstCard.GetSiblingIndex()).gameObject);
+                    }
                     photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalMyFieldCard", idx, number);
 
                     im.isMinus = false;
@@ -357,9 +409,14 @@ public class CardController : MonoBehaviourPunCallbacks
                 {
                     im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
                     int idx = im.firstCard.GetSiblingIndex();
-                    int number = int.Parse(im.firstCardNumber) % int.Parse(im.secondCardNumber);
-                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>().text = number.ToString();
-                    photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalMyFieldCard", idx, number);
+                    int quotient = int.Parse(im.firstCardNumber) / int.Parse(im.secondCardNumber);
+                    int remainder = int.Parse(im.firstCardNumber) % int.Parse(im.secondCardNumber);
+                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = quotient.ToString();
+                    if (quotient <= 0)
+                    {
+                        PhotonNetwork.Destroy(im.yourFieldCardList.transform.GetChild(im.firstCard.GetSiblingIndex()).gameObject);
+                    }
+                    photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalMyFieldCard", idx, quotient);
 
                     im.isDivision = false;
                     im.ResetMyFieldCardColor();
@@ -532,7 +589,7 @@ public class CardController : MonoBehaviourPunCallbacks
         GameObject card = parent.transform.GetChild(cardIdx).gameObject;
         Transform text = card.transform.GetChild(0);
         text.GetComponent<TextMeshProUGUI>().text = changedNumber.ToString();
-        if(changedNumber <= 0)
+        if (changedNumber <= 0)
         {
             PhotonNetwork.Destroy(card);
         }
