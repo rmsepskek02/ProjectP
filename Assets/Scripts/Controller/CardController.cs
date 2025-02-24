@@ -15,7 +15,7 @@ public class CardController : MonoBehaviourPunCallbacks
     Transform yourFieldCardListContent;
     InGameManager im;
     PunTurnManager turnManager;
-    bool isAttack = false;
+    public bool isAttack = false;
     public bool canAttack = false;
     public int firstTurn = 0;
     #endregion
@@ -36,6 +36,9 @@ public class CardController : MonoBehaviourPunCallbacks
     // 카드 클릭 이벤트 - 턴과 현재 클라이언트 구분
     public void OnClickCard()
     {
+        Debug.Log("TURN = " + turnManager.Turn);
+        Debug.Log("firstTurn = " + firstTurn);
+        Debug.Log("canAttack = " + canAttack);
         if (turnManager.Turn % 2 == 1)
         {
             if (PhotonNetwork.LocalPlayer.ActorNumber == im.playerList[0])
@@ -61,13 +64,11 @@ public class CardController : MonoBehaviourPunCallbacks
     // 카드 클릭으로 발생하는 이벤트 함수 - TODO 구현할작업도 많고 정리도해야함
     void CardEvent()
     {
-        if (turnManager.Turn != firstTurn) canAttack = true;
-        if (!canAttack) return;
-
         string openName = "Prefabs/Card/OpenCard";
         string secretName = "Prefabs/Card/SecretCard";
         string parentName = gameObject.transform.parent.name;
         string cardNumber = transform.GetChild(0).GetComponent<TextMeshProUGUI>().text;
+
         // TODO 카드는 최대 5장까지만 필드에 낼 수 있도록 수정
 
         // 로컬 헬퍼: 특수 카드(Joker, +, X, -, %) 이벤트 처리
@@ -104,8 +105,16 @@ public class CardController : MonoBehaviourPunCallbacks
                 // 연산에 따른 플래그 초기화
                 switch (operation)
                 {
-                    case "plus": im.isPlus = false; break;
-                    case "multiple": im.isMultiple = false; break;
+                    case "plus": 
+                        im.isPlus = false;
+                        im.firstCard.GetComponent<CardController>().canAttack = false;
+                        im.firstCard.GetComponent<CardController>().firstTurn = turnManager.Turn;
+                        break;
+                    case "multiple": 
+                        im.isMultiple = false;
+                        im.firstCard.GetComponent<CardController>().canAttack = false;
+                        im.firstCard.GetComponent<CardController>().firstTurn = turnManager.Turn;
+                        break;
                     case "minus": im.isMinus = false; break;
                     case "division": im.isDivision = false; break;
                 }
@@ -144,6 +153,8 @@ public class CardController : MonoBehaviourPunCallbacks
                 if (im.clickedMyCardNumber == "Joker")
                 {
                     im.joker.SetActive(true);
+                    im.ResetMyFieldCardColor();
+                    im.ResetYourFieldCardColor();
                 }
                 else if (im.clickedMyCardNumber == "+")
                 {
@@ -201,12 +212,13 @@ public class CardController : MonoBehaviourPunCallbacks
                         () => { im.isDivision = true; }
                     );
                 }
-                isAttack = false;
                 return;
             }
             else
             {
                 im.choice.SetActive(true);
+                im.ResetMyFieldCardColor();
+                im.ResetYourFieldCardColor();
             }
         }
         else if (parentName == "HorizontalMyFieldCard")
@@ -264,7 +276,8 @@ public class CardController : MonoBehaviourPunCallbacks
                 ProcessArithmeticEvent("division", (a, b) => a / b, "HorizontalMyFieldCard", true);
                 return;
             }
-
+            if (turnManager.Turn != firstTurn) canAttack = true;
+            if (!canAttack) return;
             isAttack = !isAttack;
             if (isAttack)
             {

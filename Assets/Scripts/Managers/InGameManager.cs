@@ -254,6 +254,7 @@ public class InGameManager : MonoBehaviourPunCallbacks, IPunTurnManagerCallbacks
             if (childColor != openColor && childColor != secretColor)
             {
                 child.GetComponent<Image>().color = child.GetComponent<CardController>().originColor;
+                child.GetComponent<CardController>().isAttack = false;
             }
         }
     }
