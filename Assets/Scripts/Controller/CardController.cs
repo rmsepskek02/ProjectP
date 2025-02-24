@@ -1,8 +1,7 @@
 using Photon.Pun;
 using Photon.Pun.UtilityScripts;
-using System.Reflection;
+using System;
 using TMPro;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,6 +16,8 @@ public class CardController : MonoBehaviourPunCallbacks
     InGameManager im;
     PunTurnManager turnManager;
     bool isAttack = false;
+    public bool canAttack = false;
+    public int firstTurn = 0;
     #endregion
     // Start is called before the first frame update
     void Start()
@@ -60,15 +61,84 @@ public class CardController : MonoBehaviourPunCallbacks
     // 카드 클릭으로 발생하는 이벤트 함수 - TODO 구현할작업도 많고 정리도해야함
     void CardEvent()
     {
+        if (turnManager.Turn != firstTurn) canAttack = true;
+        if (!canAttack) return;
+
         string openName = "Prefabs/Card/OpenCard";
         string secretName = "Prefabs/Card/SecretCard";
         string parentName = gameObject.transform.parent.name;
         string cardNumber = transform.GetChild(0).GetComponent<TextMeshProUGUI>().text;
         // TODO 카드는 최대 5장까지만 필드에 낼 수 있도록 수정
+
+        // 로컬 헬퍼: 특수 카드(Joker, +, X, -, %) 이벤트 처리
+        void ProcessSpecialCard(Action highlightAction, Action resetOtherField, Action setFlag)
+        {
+            highlightAction();
+            resetOtherField();
+            setFlag();
+            // 사용한 Card 파괴
+            PhotonNetwork.Destroy(im.myHandCardList.transform.GetChild(im.clickedMyCardIdx).gameObject);
+            // 파괴된거 알림
+            photonView.RPC("RemoveHandCard", RpcTarget.Others, im.yourHandCardList.name);
+        }
+
+        // 로컬 헬퍼: 산술(plus, multiple, minus, division) 이벤트 처리
+        // 연산 결과에 따라 RPC를 호출하고 상태를 초기화한 후 함수에서 빠져나갑니다.
+        void ProcessArithmeticEvent(string operation, Func<int, int, int> op, string rpcTargetName, bool checkDestroy = false)
+        {
+            if (!string.IsNullOrEmpty(im.firstCardNumber))
+            {
+                if (im.firstCard == transform)
+                    return;
+                im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
+                int idx = im.firstCard.GetSiblingIndex();
+                int num1 = int.Parse(im.firstCardNumber);
+                int num2 = int.Parse(im.secondCardNumber);
+                int result = op(num1, num2);
+                im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = result.ToString();
+                if (checkDestroy && result <= 0)
+                {
+                    PhotonNetwork.Destroy(im.yourFieldCardList.transform.GetChild(im.firstCard.GetSiblingIndex()).gameObject);
+                }
+                photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, rpcTargetName, idx, result);
+                // 연산에 따른 플래그 초기화
+                switch (operation)
+                {
+                    case "plus": im.isPlus = false; break;
+                    case "multiple": im.isMultiple = false; break;
+                    case "minus": im.isMinus = false; break;
+                    case "division": im.isDivision = false; break;
+                }
+                im.ResetMyFieldCardColor();
+                im.ResetYourFieldCardColor();
+                im.clickedMyCardNumber = "";
+                im.firstCard = null;
+                im.firstCardNumber = "";
+                im.secondCardNumber = "";
+                return;
+            }
+            else
+            { 
+                im.firstCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
+                im.firstCard = this.gameObject.transform;
+                im.ResetMyFieldCardColor();
+                foreach (Transform child in im.yourFieldCardList.transform)
+                {
+                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
+                }
+                foreach (Transform child in im.myFieldCardList.transform)
+                {
+                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
+                }
+                gameObject.GetComponent<Image>().color = originColor;
+                return;
+            }
+        }
+
         if (parentName == "HorizontalMyCard")
         {
             im.clickedMyCardIdx = gameObject.transform.GetSiblingIndex();
-            im.clickedMyCardNumber = gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text;
+            im.clickedMyCardNumber = transform.GetChild(0).GetComponent<TextMeshProUGUI>().text;
             if (CheckIsNumber(im.clickedMyCardNumber) == false)
             {
                 if (im.clickedMyCardNumber == "Joker")
@@ -77,58 +147,61 @@ public class CardController : MonoBehaviourPunCallbacks
                 }
                 else if (im.clickedMyCardNumber == "+")
                 {
-                    foreach (Transform child in im.myFieldCardList.transform)
-                    {
-                        child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.YellowColor);
-                    }
-                    im.ResetYourFieldCardColor();
-                    im.isPlus = true;
-                    // 사용한 Card 파괴
-                    PhotonNetwork.Destroy(im.myHandCardList.transform.GetChild(im.clickedMyCardIdx).gameObject);
-                    // 파괴된거 알림
-                    photonView.RPC("RemoveHandCard", RpcTarget.Others, im.yourHandCardList.name);
+                    ProcessSpecialCard(
+                        () =>
+                        {
+                            foreach (Transform child in im.myFieldCardList.transform)
+                            {
+                                child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.YellowColor);
+                            }
+                        },
+                        () => { im.ResetYourFieldCardColor(); },
+                        () => { im.isPlus = true; }
+                    );
                 }
                 else if (im.clickedMyCardNumber == "X")
                 {
-                    foreach (Transform child in im.myFieldCardList.transform)
-                    {
-                        child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.YellowColor);
-                    }
-                    im.ResetYourFieldCardColor();
-                    im.isMultiple = true;
-                    // 사용한 Card 파괴
-                    PhotonNetwork.Destroy(im.myHandCardList.transform.GetChild(im.clickedMyCardIdx).gameObject);
-                    // 파괴된거 알림
-                    photonView.RPC("RemoveHandCard", RpcTarget.Others, im.yourHandCardList.name);
+                    ProcessSpecialCard(
+                        () =>
+                        {
+                            foreach (Transform child in im.myFieldCardList.transform)
+                            {
+                                child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.YellowColor);
+                            }
+                        },
+                        () => { im.ResetYourFieldCardColor(); },
+                        () => { im.isMultiple = true; }
+                    );
                 }
                 else if (im.clickedMyCardNumber == "-")
                 {
-                    foreach (Transform child in im.yourFieldCardList.transform)
-                    {
-                        child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.YellowColor);
-                    }
-                    im.ResetMyFieldCardColor();
-                    im.isMinus = true;
-                    // 사용한 Card 파괴
-                    PhotonNetwork.Destroy(im.myHandCardList.transform.GetChild(im.clickedMyCardIdx).gameObject);
-                    // 파괴된거 알림
-                    photonView.RPC("RemoveHandCard", RpcTarget.Others, im.yourHandCardList.name);
+                    ProcessSpecialCard(
+                        () =>
+                        {
+                            foreach (Transform child in im.yourFieldCardList.transform)
+                            {
+                                child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.YellowColor);
+                            }
+                        },
+                        () => { im.ResetMyFieldCardColor(); },
+                        () => { im.isMinus = true; }
+                    );
                 }
                 else if (im.clickedMyCardNumber == "%")
                 {
-                    foreach (Transform child in im.yourFieldCardList.transform)
-                    {
-                        child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.YellowColor);
-                    }
-                    im.ResetMyFieldCardColor();
-                    im.isDivision = true;
-                    // 사용한 Card 파괴
-                    PhotonNetwork.Destroy(im.myHandCardList.transform.GetChild(im.clickedMyCardIdx).gameObject);
-                    // 파괴된거 알림
-                    photonView.RPC("RemoveHandCard", RpcTarget.Others, im.yourHandCardList.name);
+                    ProcessSpecialCard(
+                        () =>
+                        {
+                            foreach (Transform child in im.yourFieldCardList.transform)
+                            {
+                                child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.YellowColor);
+                            }
+                        },
+                        () => { im.ResetMyFieldCardColor(); },
+                        () => { im.isDivision = true; }
+                    );
                 }
                 isAttack = false;
-
                 return;
             }
             else
@@ -154,7 +227,6 @@ public class CardController : MonoBehaviourPunCallbacks
                 else if (originColor == Global.Colors.ChangeColor(Global.Colors.SecretColor))
                 {
                     photonView.RPC("SpawnHandCard", RpcTarget.Others, secretName, im.yourFieldCardList.transform.position, im.yourFieldCardList.name, cardNumber, false);
-
                     GameObject go = PhotonNetwork.Instantiate("Prefabs/Card/SecretCard", im.myFieldCardList.transform.position, Quaternion.identity);
                     Transform parent = GameObject.Find(im.myFieldCardList.name).transform;
                     go.transform.SetParent(parent, false);
@@ -163,162 +235,33 @@ public class CardController : MonoBehaviourPunCallbacks
                 }
                 im.isCopy = false;
                 isAttack = false;
-
                 im.ResetMyFieldCardColor();
                 im.ResetYourFieldCardColor();
                 return;
             }
 
-            // 1.
             // plus 이벤트
             if (im.isPlus == true)
             {
-                if (im.firstCardNumber != "")
-                {
-                    im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                    int idx = im.firstCard.GetSiblingIndex();
-                    int number = int.Parse(im.firstCardNumber) + int.Parse(im.secondCardNumber);
-                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = number.ToString();
-                    photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalYourFieldCard", idx, number);
-
-                    im.isPlus = false;
-                    im.ResetMyFieldCardColor();
-                    im.ResetYourFieldCardColor();
-                    im.clickedMyCardNumber = "";
-                    im.firstCard = null;
-                    im.firstCardNumber = "";
-                    im.secondCardNumber = "";
-
-                    return;
-                }
-
-                im.firstCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                im.firstCard = this.gameObject.transform;
-                im.ResetMyFieldCardColor();
-                foreach (Transform child in im.yourFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
-                foreach (Transform child in im.myFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
+                ProcessArithmeticEvent("plus", (a, b) => a + b, "HorizontalYourFieldCard");
                 return;
             }
             // multiple 이벤트
             if (im.isMultiple == true)
             {
-                if (im.firstCardNumber != "")
-                {
-                    im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                    int idx = im.firstCard.GetSiblingIndex();
-                    int number = int.Parse(im.firstCardNumber) * int.Parse(im.secondCardNumber);
-                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = number.ToString();
-                    photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalYourFieldCard", idx, number);
-
-                    im.isMultiple = false;
-                    im.ResetMyFieldCardColor();
-                    im.ResetYourFieldCardColor();
-                    im.clickedMyCardNumber = "";
-                    im.firstCard = null;
-                    im.firstCardNumber = "";
-                    im.secondCardNumber = "";
-
-                    return;
-                }
-
-                im.firstCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                im.firstCard = this.gameObject.transform;
-                im.ResetMyFieldCardColor();
-                foreach (Transform child in im.yourFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
-                foreach (Transform child in im.myFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
+                ProcessArithmeticEvent("multiple", (a, b) => a * b, "HorizontalYourFieldCard");
                 return;
             }
-
-            // 2.
             // minus 이벤트
             if (im.isMinus == true)
             {
-                if (im.firstCardNumber != "")
-                {
-                    im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                    int idx = im.firstCard.GetSiblingIndex();
-                    int number = int.Parse(im.firstCardNumber) - int.Parse(im.secondCardNumber);
-                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = number.ToString();
-                    if (number <= 0)
-                    {
-                        PhotonNetwork.Destroy(im.yourFieldCardList.transform.GetChild(im.firstCard.GetSiblingIndex()).gameObject);
-                    }
-                    photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalMyFieldCard", idx, number);
-
-                    im.isMinus = false;
-                    im.ResetMyFieldCardColor();
-                    im.ResetYourFieldCardColor();
-                    im.clickedMyCardNumber = "";
-                    im.firstCard = null;
-                    im.firstCardNumber = "";
-                    im.secondCardNumber = "";
-
-                    return;
-                }
-
-                im.firstCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                im.firstCard = this.gameObject.transform;
-                im.ResetMyFieldCardColor();
-                foreach (Transform child in im.yourFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
-                foreach (Transform child in im.myFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
+                ProcessArithmeticEvent("minus", (a, b) => a - b, "HorizontalMyFieldCard", true);
                 return;
             }
             // division 이벤트
             if (im.isDivision == true)
             {
-                if (im.firstCardNumber != "")
-                {
-                    im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                    int idx = im.firstCard.GetSiblingIndex();
-                    int quotient = int.Parse(im.firstCardNumber) / int.Parse(im.secondCardNumber);
-                    int remainder = int.Parse(im.firstCardNumber) % int.Parse(im.secondCardNumber);
-                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = quotient.ToString();
-                    if (quotient <= 0)
-                    {
-                        PhotonNetwork.Destroy(im.yourFieldCardList.transform.GetChild(im.firstCard.GetSiblingIndex()).gameObject);
-                    }
-                    photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalMyFieldCard", idx, quotient);
-
-                    im.isDivision = false;
-                    im.ResetMyFieldCardColor();
-                    im.ResetYourFieldCardColor();
-                    im.clickedMyCardNumber = "";
-                    im.firstCard = null;
-                    im.firstCardNumber = "";
-                    im.secondCardNumber = "";
-
-                    return;
-                }
-
-                im.firstCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                im.firstCard = this.gameObject.transform;
-                im.ResetMyFieldCardColor();
-                foreach (Transform child in im.yourFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
-                foreach (Transform child in im.myFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
+                ProcessArithmeticEvent("division", (a, b) => a / b, "HorizontalMyFieldCard", true);
                 return;
             }
 
@@ -334,7 +277,6 @@ public class CardController : MonoBehaviourPunCallbacks
                 }
                 gameObject.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.GreenColor);
                 //isAttack = true;
-
                 im.clickedMyCardIdx = gameObject.transform.GetSiblingIndex();
                 im.clickedMyCardNumber = gameObject.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text;
             }
@@ -362,122 +304,28 @@ public class CardController : MonoBehaviourPunCallbacks
                 return;
             }
 
-            //1.
             // minus 이벤트
             if (im.isMinus == true)
             {
-                if (im.firstCardNumber != "")
-                {
-                    im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                    int idx = im.firstCard.GetSiblingIndex();
-                    int number = int.Parse(im.firstCardNumber) - int.Parse(im.secondCardNumber);
-                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = number.ToString();
-                    if (number <= 0)
-                    {
-                        PhotonNetwork.Destroy(im.yourFieldCardList.transform.GetChild(im.firstCard.GetSiblingIndex()).gameObject);
-                    }
-                    photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalMyFieldCard", idx, number);
-
-                    im.isMinus = false;
-                    im.ResetMyFieldCardColor();
-                    im.ResetYourFieldCardColor();
-                    im.clickedMyCardNumber = "";
-                    im.firstCard = null;
-                    im.firstCardNumber = "";
-                    im.secondCardNumber = "";
-
-                    return;
-                }
-
-                im.firstCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                im.firstCard = this.gameObject.transform;
-                im.ResetMyFieldCardColor();
-                foreach (Transform child in im.yourFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
-                foreach (Transform child in im.myFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
+                ProcessArithmeticEvent("minus", (a, b) => a - b, "HorizontalMyFieldCard", true);
                 return;
             }
             // division 이벤트
             if (im.isDivision == true)
             {
-                if (im.firstCardNumber != "")
-                {
-                    im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                    int idx = im.firstCard.GetSiblingIndex();
-                    int quotient = int.Parse(im.firstCardNumber) / int.Parse(im.secondCardNumber);
-                    int remainder = int.Parse(im.firstCardNumber) % int.Parse(im.secondCardNumber);
-                    im.firstCard.GetComponentInChildren<TextMeshProUGUI>(true).text = quotient.ToString();
-                    if (quotient <= 0)
-                    {
-                        PhotonNetwork.Destroy(im.yourFieldCardList.transform.GetChild(im.firstCard.GetSiblingIndex()).gameObject);
-                    }
-                    photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalMyFieldCard", idx, quotient);
-
-                    im.isDivision = false;
-                    im.ResetMyFieldCardColor();
-                    im.ResetYourFieldCardColor();
-                    im.clickedMyCardNumber = "";
-                    im.firstCard = null;
-                    im.firstCardNumber = "";
-                    im.secondCardNumber = "";
-
-                    return;
-                }
-
-                im.firstCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                im.firstCard = this.gameObject.transform;
-                im.ResetMyFieldCardColor();
-                foreach (Transform child in im.yourFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
-                foreach (Transform child in im.myFieldCardList.transform)
-                {
-                    child.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.BlueColor);
-                }
+                ProcessArithmeticEvent("division", (a, b) => a / b, "HorizontalMyFieldCard", true);
                 return;
             }
-
-            // 2.
             // plus 이벤트
             if (im.isPlus == true)
             {
-                im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                int idx = im.firstCard.GetSiblingIndex();
-                int number = int.Parse(im.firstCardNumber) + int.Parse(im.secondCardNumber);
-                im.firstCard.GetComponentInChildren<TextMeshProUGUI>().text = number.ToString();
-                photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalYourFieldCard", idx, number);
-
-                im.isPlus = false;
-                im.ResetMyFieldCardColor();
-                im.ResetYourFieldCardColor();
-                im.clickedMyCardNumber = "";
-                im.firstCard = null;
-                im.firstCardNumber = "";
-                im.secondCardNumber = "";
+                ProcessArithmeticEvent("plus", (a, b) => a + b, "HorizontalYourFieldCard");
                 return;
             }
             // multiple 이벤트
             if (im.isMultiple == true)
             {
-                im.secondCardNumber = GetComponentInChildren<TextMeshProUGUI>(true).text;
-                int idx = im.firstCard.GetSiblingIndex();
-                int number = int.Parse(im.firstCardNumber) * int.Parse(im.secondCardNumber);
-                im.firstCard.GetComponentInChildren<TextMeshProUGUI>().text = number.ToString();
-                photonView.RPC("ChangeFieldCardAfterFundamental", RpcTarget.Others, "HorizontalYourFieldCard", idx, number);
-
-                im.isMultiple = false;
-                im.ResetMyFieldCardColor();
-                im.ResetYourFieldCardColor();
-                im.clickedMyCardNumber = "";
-                im.firstCard = null;
-                im.firstCardNumber = "";
-                im.secondCardNumber = "";
+                ProcessArithmeticEvent("multiple", (a, b) => a * b, "HorizontalYourFieldCard");
                 return;
             }
 
@@ -499,6 +347,7 @@ public class CardController : MonoBehaviourPunCallbacks
             cardPosition = "";
         }
     }
+
 
     // 카드의 텍스트 확인
     bool CheckIsNumber(string text)
@@ -613,6 +462,3 @@ public class CardController : MonoBehaviourPunCallbacks
         text.gameObject.SetActive(isOpen);
     }
 }
-
-// TODO :: 자기자신은 사칙연산의 두번째카드로 사용 못하도록 
-// 빨간색으로 바꾸어 선택을 하지 못하도록 보여줄것

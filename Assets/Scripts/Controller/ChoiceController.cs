@@ -14,11 +14,13 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     public Button cancelButton;
 
     InGameManager im;
+    PunTurnManager turnManager;
     #endregion
     // Start is called before the first frame update
     void Start()
     {
         im = InGameManager.instance;
+        turnManager = im.GetComponent<PunTurnManager>();
     }
 
     // Update is called once per frame
@@ -30,6 +32,7 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     {
         Transform childCard = im.myHandCardList.transform.GetChild(im.clickedMyCardIdx);
         childCard.SetParent(im.myFieldCardList.transform);
+        childCard.GetComponent<CardController>().firstTurn = turnManager.Turn;
 
         string yourPrefabName = "Prefabs/Card/OpenCard";
         Vector3 yourSpawnPosition = im.yourFieldCardList.transform.position;
@@ -55,6 +58,7 @@ public class ChoiceController : MonoBehaviourPunCallbacks
         childCard.GetComponent<CardController>().originColor = Global.Colors.ChangeColor(Global.Colors.SecretColor);
 
         childCard.SetParent(im.myFieldCardList.transform);
+        childCard.GetComponent<CardController>().firstTurn = turnManager.Turn;
 
         string yourPrefabName = "Prefabs/Card/SecretCard";
         Vector3 yourSpawnPosition = im.yourFieldCardList.transform.position;
@@ -85,7 +89,10 @@ public class ChoiceController : MonoBehaviourPunCallbacks
         go.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = cardNumber;
         go.transform.GetChild(0).gameObject.SetActive(false);
         Transform parent = GameObject.Find(parentName).transform;
-        go.transform.SetParent(parent, false); 
+        go.transform.SetParent(parent, false);
+
+        go.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.SecretColor);
+        go.GetComponent<CardController>().originColor = Global.Colors.ChangeColor(Global.Colors.SecretColor);
     }
     // 상대방에게 오픈필드카드 생성을 알림
     [PunRPC]
