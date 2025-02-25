@@ -30,6 +30,8 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     }
     public void OnClickOpen()
     {
+        if (CheckFieldCard() == true) return;
+
         Transform childCard = im.myHandCardList.transform.GetChild(im.clickedMyCardIdx);
         childCard.SetParent(im.myFieldCardList.transform);
         childCard.GetComponent<CardController>().firstTurn = turnManager.Turn;
@@ -53,6 +55,8 @@ public class ChoiceController : MonoBehaviourPunCallbacks
     }
     public void OnClickSecret()
     {
+        if (CheckFieldCard() == true) return;
+
         Transform childCard = im.myHandCardList.transform.GetChild(im.clickedMyCardIdx);
         childCard.GetComponent<Image>().color = Global.Colors.ChangeColor(Global.Colors.SecretColor);
         childCard.GetComponent<CardController>().originColor = Global.Colors.ChangeColor(Global.Colors.SecretColor);
@@ -76,6 +80,16 @@ public class ChoiceController : MonoBehaviourPunCallbacks
 
         gameObject.SetActive(false);
     }
+
+    public bool CheckFieldCard()
+    {
+        if (im.myFieldCardList.transform.childCount >= 5)
+        {
+            return true;
+        }
+        return false;
+    }
+
     public void OnClickCancel()
     {
         gameObject.SetActive(false);
@@ -101,7 +115,7 @@ public class ChoiceController : MonoBehaviourPunCallbacks
         GameObject go = PhotonNetwork.Instantiate(prefabName, position, Quaternion.identity);
         go.transform.GetChild(0).GetComponent<TextMeshProUGUI>().text = cardNumber;
         Transform parent = GameObject.Find(parentName).transform;
-        go.transform.SetParent(parent, false); 
+        go.transform.SetParent(parent, false);
     }
     // 상대방에게 핸드카드 제거를 알림
     [PunRPC]

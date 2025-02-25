@@ -36,7 +36,9 @@ public class DeckController : MonoBehaviourPunCallbacks
 
     public void DrawCard(string cardNumber)
     {
+        if (im.myHandCardList.transform.childCount >= 9) return;
         if (cardNumber == "") return;
+
         string myPrefabName = "Prefabs/Card/OpenCard";
         string yourPrefabName = "Prefabs/Card/SecretCard";
         string myParentName = im.myHandCardList.name;

@@ -36,9 +36,6 @@ public class CardController : MonoBehaviourPunCallbacks
     // 카드 클릭 이벤트 - 턴과 현재 클라이언트 구분
     public void OnClickCard()
     {
-        Debug.Log("TURN = " + turnManager.Turn);
-        Debug.Log("firstTurn = " + firstTurn);
-        Debug.Log("canAttack = " + canAttack);
         if (turnManager.Turn % 2 == 1)
         {
             if (PhotonNetwork.LocalPlayer.ActorNumber == im.playerList[0])
